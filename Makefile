@@ -1,34 +1,20 @@
-CFLAGS=--std=c17 -Wall -pedantic -Isrc/ -ggdb -Werror -Wextra -DDEBUG
-BUILDDIR=build
-SRCDIR=src
-CC=gcc
+ASM=nasm
+ASMFLAGS=-felf64
+LD=ld
 
-all: $(BUILDDIR)/mem.o $(BUILDDIR)/util.o $(BUILDDIR)/mem_debug.o $(BUILDDIR)/test.o $(BUILDDIR)/main.o
-	$(CC) -o $(BUILDDIR)/main $^
+program: main 
 
-build:
-	mkdir -p $(BUILDDIR)
+main: main.o dict.o lib.o
+	$(LD) -o $@ $^
 
+main.o: main.asm colon.inc words.inc
+	$(ASM) $(ASMFLAGS) $<
 
-$(BUILDDIR)/mem.o: $(SRCDIR)/mem.c build
-	$(CC) -c $(CFLAGS) $< -o $@
-
-$(BUILDDIR)/mem_debug.o: $(SRCDIR)/mem_debug.c build
-	$(CC) -c $(CFLAGS) $< -o $@
-
-$(BUILDDIR)/util.o: $(SRCDIR)/util.c build
-	$(CC) -c $(CFLAGS) $< -o $@
-
-$(BUILDDIR)/test.o: $(SRCDIR)/test.c build
-	$(CC) -c $(CFLAGS) $< -o $@
-
-
-$(BUILDDIR)/main.o: $(SRCDIR)/main.c build
-	$(CC) -c $(CFLAGS) $< -o $@
-
-
+%.o: %.asm
+	$(ASM) $(ASMFLAGS) $<
+	
 clean:
-	rm -rf $(BUILDDIR)
+	rm -f *.o
 
-run:
-	./$(BUILDDIR)/main
+.PHONY: clean, program
+
